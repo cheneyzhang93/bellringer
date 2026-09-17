@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "2.0.0",
+  "futureEnvelopeField": "ignored-by-consumer",
+  "event": {
+    "type": "slow-sql",
+    "level": "P2",
+    "title": "慢 SQL：查询耗时 3821ms",
+    "message": "`SELECT * FROM orders WHERE status = ?` 耗时 3821ms（阈值 1000ms）",
+    "source": "sql:8d3f2a91c0b5",
+    "occurredAt": 1789729200000,
+    "app": "checkout-demo",
+    "eventId": "7c4b2d0e-1f3a-4b5c-9d8e-2a3b4c5d6e7f",
+    "payload": {
+      "elapsedMillis": 3821,
+      "thresholdMillis": 1000
+    },
+    "futureEventField": {
+      "nested": [1, 2, 3],
+      "flag": true
+    }
+  }
+}

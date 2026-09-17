@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "1.0.0",
+  "heartbeat": {
+    "app": "checkout-demo",
+    "instance": "checkout-demo-1:48217",
+    "version": "2.4.1",
+    "env": "prod",
+    "startedAt": 1789722000000,
+    "modules": {
+      "alert": true,
+      "slowSql": true,
+      "trace": false,
+      "metrics": true
+    }
+  }
+}

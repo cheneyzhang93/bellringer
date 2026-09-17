@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "1.0.0",
+  "event": {
+    "type": "health-check",
+    "title": "应用启动完成",
+    "occurredAt": 1789722000000,
+    "app": "checkout-demo",
+    "eventId": "3d2f8a11-6c7e-4a90-b1d2-0e5f7a9c1b33"
+  }
+}
