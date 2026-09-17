@@ -1,0 +1,81 @@
+# =============================================================================
+# 敲钟人（Bellringer）starter 全量配置示例（F8 冻结前缀 observability.*）
+# -----------------------------------------------------------------------------
+# 用法：按需复制到宿主 application.yml 后删减；未出现的键＝使用下方注释中的缺省值。
+# 总开关缺省 false：零装配、零线程、零网络、零副作用；置 true 后各通道再按自身
+# 开关与参数完备性独立条件装配——缺依赖（如未引入 MyBatis/Logback）只会跳过，
+# 不会报错；开关打开但参数缺失（如 webhook 为空）＝启动即失败，不静默丢告警。
+# =============================================================================
+
+observability:
+  enabled: true                # 唯一总开关
+
+  # ---- 应用标识（F5，刻意 fail-fast）-----------------------------------------
+  app: payments-api            # 取值链：本键 → spring.application.name → 启动失败
+  env: prod                    # 取值链：本键 → 首个激活 profile → default
+  # version: 1.4.2             # 心跳 version 来源；缺省回退 spring.application.version，仍缺则不带
+
+  # ---- 上报出口（F1 事件上报 + F2 实例心跳）----------------------------------
+  report:
+    mode: webhook              # webhook＝仅本机直发群机器人（缺省）；http＝仅上报控制台；both＝双出口
+    endpoint: ""               # 控制台地址（mode 含 http 时必填，缺失＝启动失败）
+    token: ""                  # 控制台签发的租户 Token，作为 Bearer 凭据（mode 含 http 时必填）
+    queue-size: 1024           # 有界队列容量：满则丢弃并计数，绝不阻塞业务线程
+    timeout-millis: 3000       # 单次请求超时（毫秒）
+    max-retries: 5             # 指数退避重试上限（仅上报出口有重试语义）
+    heartbeat-interval-seconds: 30   # 实例心跳周期（秒）；控制台 90s 判失联
+
+  # ---- 推送出口去重（F6；上报出口全量不删，不受影响）--------------------------
+  dedup:
+    enabled: true
+    window-seconds: 300        # 同 app+type+aggregateKey 窗口内只推送首条
+    key-prefix: "obs:alert:dedup"
+    redis: false               # true 且容器内有 StringRedisTemplate 时改用 Redis 窗口去重（多实例）
+
+  # ---- 告警推送出口与消息模板 ------------------------------------------------
+  alert:
+    connect-timeout-millis: 3000
+    read-timeout-millis: 5000
+    # trace-url-template: "https://trace.example.com/search?traceId={traceId}"   # 含 {traceId} 占位；空＝不输出跳转行
+    # trace-query-hint: "本地检索：grep {traceId} application.log"               # 含 {traceId} 占位；空＝不输出
+    dingtalk:
+      enabled: false
+      webhook: ""              # https://oapi.dingtalk.com/robot/send?access_token=...
+      secret: ""               # 加签密钥；仅关键字校验的旧机器人可留空
+      at-all: true             # P0 是否 @所有人
+      at-mobiles: []           # P1 级 @ 的手机号列表
+    wecom:
+      enabled: false
+      webhook: ""              # https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...
+    feishu:
+      enabled: false
+      webhook: ""              # https://open.feishu.cn/open-apis/bot/v2/hook/...
+      secret: ""               # 开启签名校验时必填
+
+  # ---- 慢 SQL（MyBatis 拦截；宿主未引入 MyBatis 时整体跳过）---------------------
+  slow-sql:
+    enabled: true
+    millis: 500                # 慢 SQL 阈值（毫秒）：超过发 P2 事件
+    upgrade-millis: 3000       # 升级阈值（毫秒）：超过直接升 P1
+
+  # ---- 事件源开关族（F8 前缀内扩展键）----------------------------------------
+  sources:
+    error-log:
+      enabled: true            # 日志框架 ERROR 统一出口 → system-error；自动跳过本框架自身 logger 防回环
+    lock-timeout:
+      enabled: true            # 数据库锁等待超时 / 死锁 → lock-timeout
+    scheduled-task:
+      enabled: true            # Boot taskScheduler 执行失败 → scheduled-task-error（调度不中断）
+    access-log:
+      enabled: false           # 缺省关闭；开启后每请求一条 INFO，另对 5xx / 慢请求发事件
+      slow-millis: 1000        # 慢请求阈值（毫秒），超过发 P2
+      emit-server-errors: true # 5xx 响应发 P1
+    health-check:
+      enabled: true
+      interval-seconds: 60     # 探测周期
+      failure-threshold: 3     # 连续失败达阈值才发事件（抖动抑制）；恢复发 P2
+      initial-delay-seconds: 10
+      targets:                 # 空列表＝整个事件源不装配（零线程、零网络）
+        - name: self
+          url: "http://127.0.0.1:8080/actuator/health"
+          timeout-millis: 3000

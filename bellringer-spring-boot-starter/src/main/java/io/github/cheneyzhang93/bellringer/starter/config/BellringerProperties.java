@@ -185,12 +185,26 @@ public class BellringerProperties {
         /** Redis 键前缀：{prefix}:{app}:{type}:{aggregateKey}。 */
         private String keyPrefix = "obs:alert:dedup";
 
+        /**
+         * 多实例去重：true 且容器内存在 {@code StringRedisTemplate} 时启用 Redis 窗口去重；
+         * 缺省 false＝单实例内存去重（零基建部署）。
+         */
+        private boolean redis = false;
+
         public boolean isEnabled() {
             return enabled;
         }
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public boolean isRedis() {
+            return redis;
+        }
+
+        public void setRedis(boolean redis) {
+            this.redis = redis;
         }
 
         public int getWindowSeconds() {

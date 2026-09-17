@@ -116,6 +116,7 @@ class BellringerAutoConfigurationTest {
                     assertThat(p.getDedup().isEnabled()).isTrue();
                     assertThat(p.getDedup().getWindowSeconds()).isEqualTo(300);
                     assertThat(p.getDedup().getKeyPrefix()).isEqualTo("obs:alert:dedup");
+                    assertThat(p.getDedup().isRedis()).isFalse();
                     assertThat(p.getAlert().getDingtalk().isEnabled()).isFalse();
                     assertThat(p.getSlowSql().isEnabled()).isTrue();
                     assertThat(p.getSlowSql().getMillis()).isEqualTo(500L);
@@ -131,6 +132,7 @@ class BellringerAutoConfigurationTest {
                         "observability.report.timeout-millis=1500",
                         "observability.report.queue-size=64",
                         "observability.dedup.window-seconds=60",
+                        "observability.dedup.redis=true",
                         "observability.slow-sql.millis=800",
                         "observability.slow-sql.upgrade-millis=4000")
                 .run(context -> {
@@ -140,6 +142,7 @@ class BellringerAutoConfigurationTest {
                     assertThat(p.getReport().getTimeoutMillis()).isEqualTo(1500L);
                     assertThat(p.getReport().getQueueSize()).isEqualTo(64);
                     assertThat(p.getDedup().getWindowSeconds()).isEqualTo(60);
+                    assertThat(p.getDedup().isRedis()).isTrue();
                     assertThat(p.getSlowSql().getMillis()).isEqualTo(800L);
                     assertThat(p.getSlowSql().getUpgradeMillis()).isEqualTo(4000L);
                 });

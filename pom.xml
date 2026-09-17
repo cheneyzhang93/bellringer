@@ -21,6 +21,21 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <id>cheneyzhang93</id>
+      <name>Cheney Zhang</name>
+      <url>https://github.com/cheneyzhang93</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/cheneyzhang93/bellringer.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/cheneyzhang93/bellringer.git</developerConnection>
+    <url>https://github.com/cheneyzhang93/bellringer</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <modules>
     <module>bellringer-protocol</module>
     <module>bellringer-spring-boot-starter</module>
@@ -73,4 +88,77 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <!-- 发布专用：mvn -Prelease deploy（前置：settings.xml 配 central 令牌 ＋ GPG 私钥；版本须去 -SNAPSHOT） -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.12.0</version>
+            <configuration>
+              <!-- 中文 javadoc 不因 doclint 风格告警中断发布 -->
+              <doclint>none</doclint>
+              <quiet>true</quiet>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.8</version>
+            <configuration>
+              <!-- 非交互签名：口令经 -Dgpg.passphrase 注入；本地演练可用 -Dgpg.skip=true 跳过 -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.11.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <!-- settings.xml 的 server id；autoPublish 缺省 false＝上传后在 Central Portal 人工确认发布 -->
+              <publishingServerId>central</publishingServerId>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

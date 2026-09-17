@@ -27,7 +27,7 @@ jobs:
       - name: Scan for internal identifiers
         run: |
           pattern='xddt|business\.erp|erp-api|erp_api|NIU-SHE|com\.platform|platform_erp|置换单'
-          if grep -RniE "$pattern" --exclude-dir=target pom.xml bellringer-protocol bellringer-spring-boot-starter; then
+          if grep -RniE "$pattern" --exclude-dir=target pom.xml example.yml README.md bellringer-protocol bellringer-spring-boot-starter; then
             echo "::error::Internal identifier found in sources"
             exit 1
           fi
