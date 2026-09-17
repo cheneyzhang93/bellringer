@@ -37,6 +37,13 @@ public class BellringerAutoConfiguration {
         return AppIdentity.resolve(properties, environment);
     }
 
+    /** 事件工厂：宿主与 S3 事件源共用的埋点入口（预填 F5 身份口径）。 */
+    @Bean
+    @ConditionalOnMissingBean
+    public AlertEventFactory bellringerAlertEventFactory(AppIdentity bellringerAppIdentity) {
+        return new AlertEventFactory(bellringerAppIdentity);
+    }
+
     @Bean
     public TaskExecutorCustomizer bellringerTaskExecutorCustomizer(AppIdentity bellringerAppIdentity) {
         return new BellringerTaskExecutorCustomizer(bellringerAppIdentity);

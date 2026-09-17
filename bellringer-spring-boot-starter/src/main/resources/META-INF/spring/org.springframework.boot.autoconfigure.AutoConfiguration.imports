@@ -6,3 +6,4 @@ io.github.cheneyzhang93.bellringer.starter.engine.FallbackDedupAutoConfiguration
 io.github.cheneyzhang93.bellringer.starter.outlet.SenderAutoConfiguration
 io.github.cheneyzhang93.bellringer.starter.outlet.FallbackSenderAutoConfiguration
 io.github.cheneyzhang93.bellringer.starter.report.ReportAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.source.SourceAutoConfiguration

@@ -44,7 +44,8 @@ class BellringerAutoConfigurationTest {
                         "io.github.cheneyzhang93.bellringer.starter.engine.FallbackDedupAutoConfiguration",
                         "io.github.cheneyzhang93.bellringer.starter.outlet.SenderAutoConfiguration",
                         "io.github.cheneyzhang93.bellringer.starter.outlet.FallbackSenderAutoConfiguration",
-                        "io.github.cheneyzhang93.bellringer.starter.report.ReportAutoConfiguration");
+                        "io.github.cheneyzhang93.bellringer.starter.report.ReportAutoConfiguration",
+                        "io.github.cheneyzhang93.bellringer.starter.source.SourceAutoConfiguration");
     }
 
     @Test
@@ -70,6 +71,7 @@ class BellringerAutoConfigurationTest {
                     assertThat(identity.getEnv()).isEqualTo("prod");
                     assertThat(context).hasSingleBean(TaskExecutorCustomizer.class);
                     assertThat(context).hasSingleBean(TaskDecorator.class);
+                    assertThat(context).hasSingleBean(AlertEventFactory.class);
                     // 出口 SPI 兜底与管道属 S4 装配类，根配置刻意不产出任何 AlertSender
                     assertThat(context).doesNotHaveBean(AlertSender.class);
                 });

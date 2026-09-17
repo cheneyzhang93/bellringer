@@ -40,6 +40,30 @@
       <artifactId>spring-data-redis</artifactId>
       <optional>true</optional>
     </dependency>
+    <!-- S3 慢 SQL / 锁超时拦截：宿主引入 MyBatis 才装配（BOM 未托管 mybatis，显式版本） -->
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>${mybatis.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <!-- S3 ERROR 出口：宿主用 Logback 才装配（Boot 默认日志实现） -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- S3 访问日志过滤器：宿主为 Web 应用才装配 -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
