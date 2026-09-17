@@ -26,7 +26,8 @@ jobs:
 
       - name: Scan for internal identifiers
         run: |
-          pattern='xddt|business\.erp|erp-api|erp_api|NIU-SHE|com\.platform|platform_erp|置换单'
+          # 脱敏门禁：块表以 base64 存放，避免把内部标识本身写进公开仓
+          pattern=$(echo 'eGRkdHxidXNpbmVzc1wuZXJwfGVycC1hcGl8ZXJwX2FwaXxOSVUtU0hFfGNvbVwucGxhdGZvcm18cGxhdGZvcm1fZXJwfOe9ruaNouWNlQ==' | base64 -d)
           if grep -RniE "$pattern" --exclude-dir=target pom.xml example.yml README.md bellringer-protocol bellringer-spring-boot-starter; then
             echo "::error::Internal identifier found in sources"
             exit 1
