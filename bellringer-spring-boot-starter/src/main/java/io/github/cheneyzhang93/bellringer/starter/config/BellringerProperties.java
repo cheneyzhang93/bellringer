@@ -22,6 +22,9 @@ public class BellringerProperties {
     /** 环境标识（本键 → spring.profiles.active 首个 → default）。 */
     private String env;
 
+    /** 应用版本（F2 心跳 version 来源；空＝回退 spring.application.version，仍空则心跳不带）。 */
+    private String version;
+
     private final Report report = new Report();
 
     private final Dedup dedup = new Dedup();
@@ -29,6 +32,8 @@ public class BellringerProperties {
     private final Alert alert = new Alert();
 
     private final SlowSql slowSql = new SlowSql();
+
+    private final Sources sources = new Sources();
 
     public boolean isEnabled() {
         return enabled;
@@ -54,6 +59,14 @@ public class BellringerProperties {
         this.env = env;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public Report getReport() {
         return report;
     }
@@ -68,6 +81,10 @@ public class BellringerProperties {
 
     public SlowSql getSlowSql() {
         return slowSql;
+    }
+
+    public Sources getSources() {
+        return sources;
     }
 
     /** F1 事件上报出口（starter → 控制台 HTTP）。 */
@@ -207,6 +224,28 @@ public class BellringerProperties {
 
         /** 无集中检索环境排障指引（含 {traceId} 占位；空＝不输出）。 */
         private String traceQueryHint = "";
+
+        /** webhook 连接超时（毫秒）。 */
+        private int connectTimeoutMillis = 3000;
+
+        /** webhook 读取超时（毫秒）。 */
+        private int readTimeoutMillis = 5000;
+
+        public int getConnectTimeoutMillis() {
+            return connectTimeoutMillis;
+        }
+
+        public void setConnectTimeoutMillis(int connectTimeoutMillis) {
+            this.connectTimeoutMillis = connectTimeoutMillis;
+        }
+
+        public int getReadTimeoutMillis() {
+            return readTimeoutMillis;
+        }
+
+        public void setReadTimeoutMillis(int readTimeoutMillis) {
+            this.readTimeoutMillis = readTimeoutMillis;
+        }
 
         public DingTalk getDingtalk() {
             return dingtalk;
@@ -389,6 +428,209 @@ public class BellringerProperties {
 
         public void setUpgradeMillis(long upgradeMillis) {
             this.upgradeMillis = upgradeMillis;
+        }
+    }
+
+    /** S3 事件源开关族（observability.sources.*，F8 前缀内的扩展键；总开关仍为 observability.enabled）。 */
+    public static class Sources {
+
+        private final ErrorLog errorLog = new ErrorLog();
+
+        private final LockTimeout lockTimeout = new LockTimeout();
+
+        private final ScheduledTask scheduledTask = new ScheduledTask();
+
+        private final HealthCheck healthCheck = new HealthCheck();
+
+        private final AccessLog accessLog = new AccessLog();
+
+        public ErrorLog getErrorLog() {
+            return errorLog;
+        }
+
+        public LockTimeout getLockTimeout() {
+            return lockTimeout;
+        }
+
+        public ScheduledTask getScheduledTask() {
+            return scheduledTask;
+        }
+
+        public HealthCheck getHealthCheck() {
+            return healthCheck;
+        }
+
+        public AccessLog getAccessLog() {
+            return accessLog;
+        }
+
+        /** ERROR 统一出口：日志框架 ERROR 级事件 → system-error（根因类|抛出点 聚合去重）。 */
+        public static class ErrorLog {
+
+            private boolean enabled = true;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        /** 数据库锁超时 / 死锁事件源（MyBatis 拦截，异常识别，不改写 SQL 行为）。 */
+        public static class LockTimeout {
+
+            private boolean enabled = true;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        /** 定时任务失败事件源（Boot taskScheduler 错误处理包装，不抢占宿主调度器）。 */
+        public static class ScheduledTask {
+
+            private boolean enabled = true;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        /** 健康自检：周期探测配置目标，连续失败达阈值 → health-check 事件。 */
+        public static class HealthCheck {
+
+            private boolean enabled = true;
+
+            /** 探测周期（秒）。 */
+            private int intervalSeconds = 60;
+
+            /** 连续失败几次才发事件（抖动抑制）。 */
+            private int failureThreshold = 3;
+
+            /** 首次探测延迟（秒；避开启动风暴）。 */
+            private int initialDelaySeconds = 10;
+
+            private List<Target> targets = new ArrayList<Target>();
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public int getIntervalSeconds() {
+                return intervalSeconds;
+            }
+
+            public void setIntervalSeconds(int intervalSeconds) {
+                this.intervalSeconds = intervalSeconds;
+            }
+
+            public int getFailureThreshold() {
+                return failureThreshold;
+            }
+
+            public void setFailureThreshold(int failureThreshold) {
+                this.failureThreshold = failureThreshold;
+            }
+
+            public int getInitialDelaySeconds() {
+                return initialDelaySeconds;
+            }
+
+            public void setInitialDelaySeconds(int initialDelaySeconds) {
+                this.initialDelaySeconds = initialDelaySeconds;
+            }
+
+            public List<Target> getTargets() {
+                return targets;
+            }
+
+            public void setTargets(List<Target> targets) {
+                this.targets = targets;
+            }
+
+            /** 单个探测目标（HTTP GET，2xx/3xx 视为存活）。 */
+            public static class Target {
+
+                private String name = "";
+
+                private String url = "";
+
+                private int timeoutMillis = 3000;
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getUrl() {
+                    return url;
+                }
+
+                public void setUrl(String url) {
+                    this.url = url;
+                }
+
+                public int getTimeoutMillis() {
+                    return timeoutMillis;
+                }
+
+                public void setTimeoutMillis(int timeoutMillis) {
+                    this.timeoutMillis = timeoutMillis;
+                }
+            }
+        }
+
+        /** 访问日志：默认关闭；开启后每请求一条 INFO，另对 5xx / 慢请求发事件（不采集报文体）。 */
+        public static class AccessLog {
+
+            private boolean enabled = false;
+
+            /** 慢请求阈值（毫秒），超阈值发 P2 事件。 */
+            private long slowMillis = 1000;
+
+            /** 5xx 响应是否发事件（P1）。 */
+            private boolean emitServerErrors = true;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public long getSlowMillis() {
+                return slowMillis;
+            }
+
+            public void setSlowMillis(long slowMillis) {
+                this.slowMillis = slowMillis;
+            }
+
+            public boolean isEmitServerErrors() {
+                return emitServerErrors;
+            }
+
+            public void setEmitServerErrors(boolean emitServerErrors) {
+                this.emitServerErrors = emitServerErrors;
+            }
         }
     }
 }

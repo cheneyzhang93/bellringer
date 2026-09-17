@@ -1,3 +1,8 @@
 # 敲钟人 starter 自动装配注册（Boot 2.7 AutoConfiguration.imports 标准入口）
-# 根装配类：observability.enabled=true 才生效；事件源/出口装配类由后续切片按序追加
+# 全部受 observability.enabled=true 约束；after/before 关系在各类注解中声明
 io.github.cheneyzhang93.bellringer.starter.core.BellringerAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.engine.PipelineAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.engine.FallbackDedupAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.outlet.SenderAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.outlet.FallbackSenderAutoConfiguration
+io.github.cheneyzhang93.bellringer.starter.report.ReportAutoConfiguration

@@ -1,8 +1,6 @@
 package io.github.cheneyzhang93.bellringer.starter.core;
 
-import io.github.cheneyzhang93.bellringer.protocol.AlertEvent;
 import io.github.cheneyzhang93.bellringer.starter.alert.AlertSender;
-import io.github.cheneyzhang93.bellringer.starter.alert.LoggingAlertSender;
 import io.github.cheneyzhang93.bellringer.starter.config.BellringerProperties;
 import io.github.cheneyzhang93.bellringer.starter.trace.MdcKeys;
 import java.util.concurrent.Callable;
@@ -39,9 +37,14 @@ class BellringerAutoConfigurationTest {
     }
 
     @Test
-    void importsFileRegistersRootAutoConfiguration() {
+    void importsFileRegistersAllAutoConfigurations() {
         assertThat(ImportCandidates.load(AutoConfiguration.class, getClass().getClassLoader()))
-                .contains(BellringerAutoConfiguration.class.getName());
+                .contains(BellringerAutoConfiguration.class.getName(),
+                        "io.github.cheneyzhang93.bellringer.starter.engine.PipelineAutoConfiguration",
+                        "io.github.cheneyzhang93.bellringer.starter.engine.FallbackDedupAutoConfiguration",
+                        "io.github.cheneyzhang93.bellringer.starter.outlet.SenderAutoConfiguration",
+                        "io.github.cheneyzhang93.bellringer.starter.outlet.FallbackSenderAutoConfiguration",
+                        "io.github.cheneyzhang93.bellringer.starter.report.ReportAutoConfiguration");
     }
 
     @Test
@@ -67,9 +70,8 @@ class BellringerAutoConfigurationTest {
                     assertThat(identity.getEnv()).isEqualTo("prod");
                     assertThat(context).hasSingleBean(TaskExecutorCustomizer.class);
                     assertThat(context).hasSingleBean(TaskDecorator.class);
-                    assertThat(context).hasSingleBean(AlertSender.class);
-                    assertThat(context.getBean(AlertSender.class)).isInstanceOf(LoggingAlertSender.class);
-                    assertThat(context.getBean(AlertSender.class).name()).isEqualTo(LoggingAlertSender.NAME);
+                    // 出口 SPI 兜底与管道属 S4 装配类，根配置刻意不产出任何 AlertSender
+                    assertThat(context).doesNotHaveBean(AlertSender.class);
                 });
     }
 
@@ -85,16 +87,6 @@ class BellringerAutoConfigurationTest {
             assertThat(context).hasFailed();
             assertThat(context.getStartupFailure()).hasStackTraceContaining("observability.app");
         });
-    }
-
-    @Test
-    void hostAlertSenderBeanReplacesLoggingFallback() {
-        runner.withUserConfiguration(CustomSenderConfiguration.class)
-                .withPropertyValues("observability.enabled=true", "observability.app=demo")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(AlertSender.class);
-                    assertThat(context.getBean(AlertSender.class).name()).isEqualTo("custom");
-                });
     }
 
     @Test
@@ -186,25 +178,6 @@ class BellringerAutoConfigurationTest {
                             ThreadPoolTaskExecutor.class);
                     assertThat(executor.getThreadNamePrefix()).isEqualTo("host-pool-");
                 });
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class CustomSenderConfiguration {
-
-        @Bean
-        AlertSender customAlertSender() {
-            return new AlertSender() {
-                @Override
-                public String name() {
-                    return "custom";
-                }
-
-                @Override
-                public void send(AlertEvent event, String markdown) {
-                    // 测试替身：不触网
-                }
-            };
-        }
     }
 
     @Configuration(proxyBeanMethods = false)
