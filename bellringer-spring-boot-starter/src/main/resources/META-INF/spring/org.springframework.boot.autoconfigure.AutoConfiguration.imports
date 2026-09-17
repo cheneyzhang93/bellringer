@@ -1,0 +1,3 @@
+# 敲钟人 starter 自动装配注册（Boot 2.7 AutoConfiguration.imports 标准入口）
+# 根装配类：observability.enabled=true 才生效；事件源/出口装配类由后续切片按序追加
+io.github.cheneyzhang93.bellringer.starter.core.BellringerAutoConfiguration
