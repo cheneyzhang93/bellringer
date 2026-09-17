@@ -1,5 +1,6 @@
 package io.github.cheneyzhang93.bellringer.starter.source.health;
 
+import io.github.cheneyzhang93.bellringer.protocol.AggregateKeys;
 import io.github.cheneyzhang93.bellringer.protocol.AlertLevel;
 import io.github.cheneyzhang93.bellringer.protocol.EventTypes;
 import io.github.cheneyzhang93.bellringer.starter.config.BellringerProperties;
@@ -153,7 +154,7 @@ public class HealthCheckTask implements SmartLifecycle {
                         + "最近结果：" + result.describe() + "\n"
                         + "耗时：" + result.millis + "ms")
                 .source(target.getUrl())
-                .aggregateKey("down|" + key)
+                .aggregateKey(AggregateKeys.down(key))
                 .build());
     }
 
@@ -168,7 +169,7 @@ public class HealthCheckTask implements SmartLifecycle {
                         + "当前结果：" + result.describe() + "\n"
                         + "耗时：" + result.millis + "ms")
                 .source(target.getUrl())
-                .aggregateKey("up|" + key)
+                .aggregateKey(AggregateKeys.up(key))
                 .build());
     }
 
